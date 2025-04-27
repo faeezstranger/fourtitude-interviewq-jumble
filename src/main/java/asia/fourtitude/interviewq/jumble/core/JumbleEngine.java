@@ -2,8 +2,33 @@ package asia.fourtitude.interviewq.jumble.core;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+
+import org.apache.logging.log4j.util.Chars;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 public class JumbleEngine {
+
+    public List<String> getCollection(){
+
+        List<String> data = new ArrayList<String>();
+         InputStream is = this.getClass().getClassLoader().getResourceAsStream("words.txt");
+
+         try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            while(br.ready()){
+               // System.out.println(br.readLine());
+               data.add(br.readLine());
+            }
+         } catch (Exception e) {
+            e.printStackTrace();
+         }
+
+         return data;
+
+    }
 
     /**
      * From the input `word`, produces/generates a copy which has the same
@@ -23,7 +48,24 @@ public class JumbleEngine {
          * Refer to the method's Javadoc (above) and implement accordingly.
          * Must pass the corresponding unit tests.
          */
-        throw new UnsupportedOperationException("to be implemented");
+    
+        int wordlength = word.length();
+        List<Character> wrd = word.chars().mapToObj(a -> (char) a).collect(Collectors.toList());
+
+         Random r = new Random();
+         
+         StringBuilder sb = new StringBuilder();
+
+         for(int i = 0 ; i < wordlength ; i++){
+            int randomInt = r.nextInt(100);
+            int position = randomInt%wrd.size();
+            sb.append(wrd.get(position));
+            wrd.remove(position);
+         }
+
+
+         return sb.toString();
+
     }
 
     /**
@@ -48,7 +90,21 @@ public class JumbleEngine {
          * Refer to the method's Javadoc (above) and implement accordingly.
          * Must pass the corresponding unit tests.
          */
-        throw new UnsupportedOperationException("to be implemented");
+        
+        List<String> data = getCollection();
+
+         List<String> newList = data.stream()
+         .map(c->c.toLowerCase())
+         .filter(c-> c.equals(new StringBuilder().append(c).reverse().toString()) )
+         .collect(Collectors.toList());
+
+         //System.out.println(newList);
+
+         //System.out.println(newList.size());
+
+
+         return newList;
+
     }
 
     /**
@@ -69,7 +125,38 @@ public class JumbleEngine {
          * Refer to the method's Javadoc (above) and implement accordingly.
          * Must pass the corresponding unit tests.
          */
-        throw new UnsupportedOperationException("to be implemented");
+
+        List<String> data = new ArrayList<String>();
+         InputStream is = this.getClass().getClassLoader().getResourceAsStream("words.txt");
+        int maxLength = 0;
+
+         try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            while(br.ready()){
+               // System.out.println(br.readLine());
+               String readdata = br.readLine();
+               data.add(readdata);
+               if(readdata.length() > maxLength){
+                maxLength = readdata.length() ;
+               }
+               
+            }
+         } catch (Exception e) {
+            e.printStackTrace();
+         }
+
+         String output  = null;
+         if(length == null){
+             output = data.stream().filter(c -> c.length() == new Random().nextInt(10-2+1)+2).collect(Collectors.toList()).get(0);
+         }else if(length > maxLength){
+            //
+         }
+         else{
+            output = data.stream().filter(c -> c.length() == length).collect(Collectors.toList()).get(0);
+         }
+         
+         System.out.println(output+"length="+length);
+         return output;
     }
 
     /**
@@ -89,7 +176,11 @@ public class JumbleEngine {
          * Refer to the method's Javadoc (above) and implement accordingly.
          * Must pass the corresponding unit tests.
          */
-        throw new UnsupportedOperationException("to be implemented");
+        //throw new UnsupportedOperationException("to be implemented");
+
+        List<String> data = getCollection();
+        boolean exist = data.stream().map(c->c.toLowerCase()).anyMatch(c->c.equals(word.toLowerCase()));
+        return exist;
     }
 
     /**
@@ -113,7 +204,21 @@ public class JumbleEngine {
          * Refer to the method's Javadoc (above) and implement accordingly.
          * Must pass the corresponding unit tests.
          */
-        throw new UnsupportedOperationException("to be implemented");
+        //throw new UnsupportedOperationException("to be implemented");
+
+        List<String> data  = getCollection();
+        
+        if(prefix == null){
+            return new ArrayList<>();
+        }
+
+        if(Pattern.matches("[a-zA-Z]+", prefix)){
+            return data.stream()
+            .map(c->c.toLowerCase())
+            .filter(c->c.startsWith(prefix)).collect(Collectors.toList());
+        }else{
+            return new ArrayList<>();
+        }
     }
 
     /**
@@ -145,7 +250,67 @@ public class JumbleEngine {
          * Refer to the method's Javadoc (above) and implement accordingly.
          * Must pass the corresponding unit tests.
          */
-        throw new UnsupportedOperationException("to be implemented");
+        //throw new UnsupportedOperationException("to be implemented");
+        List<String>data = getCollection();
+        List<String> returnData = new ArrayList<>();
+
+         String start  = String.valueOf(startChar);
+         String end  = String.valueOf(endChar);
+
+        if (startChar == null && endChar == null && (length == null || length <= 0)){
+            
+        }else if(startChar != null && endChar == null && (length == null || length <= 0)){
+
+            returnData =  data.stream()
+            .map(c->c.toLowerCase())
+            .filter(c-> c.startsWith(start.toLowerCase()))
+            .collect(Collectors.toList());
+
+        }else if(startChar == null && endChar != null && (length == null || length <= 0)){
+
+            returnData =  data.stream()
+            .map(c->c.toLowerCase())
+            .filter(c-> c.endsWith(end.toLowerCase()))
+            .collect(Collectors.toList());
+
+        }else if(startChar == null && endChar == null && (length != null || length > 0)){
+
+            returnData =  data.stream()
+            .filter(c-> c.length() == length)
+            .collect(Collectors.toList());
+
+        }else if(startChar != null && endChar != null && (length == null || length <= 0)){
+            returnData =  data.stream()
+            .map(c->c.toLowerCase())
+            .filter(c-> c.startsWith(start.toLowerCase()))
+            .filter(c-> c.endsWith(end.toLowerCase()))
+            .collect(Collectors.toList());
+
+        }else if(startChar != null && endChar != null && (length != null && length > 0)){
+            returnData =  data.stream()
+            .map(c->c.toLowerCase())
+            .filter(c-> c.startsWith(start.toLowerCase()))
+            .filter(c-> c.endsWith(end.toLowerCase()))
+            .filter(c-> c.length() == length)
+            .collect(Collectors.toList());
+
+        }else if(startChar != null && endChar == null && (length != null && length > 0)){
+            returnData =  data.stream()
+            .map(c->c.toLowerCase())
+            .filter(c-> c.startsWith(start.toLowerCase()))
+            .filter(c-> c.length() == length)
+            .collect(Collectors.toList());
+
+        }else if(startChar == null && endChar != null && (length != null && length > 0)){
+            returnData =  data.stream()
+            .map(c->c.toLowerCase())
+            .filter(c-> c.endsWith(end.toLowerCase()))
+            .filter(c-> c.length() == length)
+            .collect(Collectors.toList());
+
+        }
+
+        return returnData;
     }
 
     /**
@@ -173,12 +338,76 @@ public class JumbleEngine {
      *                   Default is 3.
      * @return  The list of sub words constructed from input `word`.
      */
-    public Collection<String> generateSubWords(String word, Integer minLength) {
+    public Collection<String> generateSubWords(String word,Integer minLength) {
         /*
          * Refer to the method's Javadoc (above) and implement accordingly.
          * Must pass the corresponding unit tests.
          */
-        throw new UnsupportedOperationException("to be implemented");
+       // throw new UnsupportedOperationException("to be implemented");
+
+       List<String> data =  getCollection();
+
+       List<String> empty = new ArrayList<>();
+
+       if((word == null || word.isEmpty() || !Pattern.matches("[a-zA-Z]+", word)) && minLength == null){
+        return empty;
+       }
+
+       if(minLength == null){
+        return empty;
+       }
+
+       Set<Character> word1 = new HashSet<>();
+       for(Character a : word.toCharArray()){
+           word1.add(a);
+       }
+
+       List<String> test  = data.stream()
+                .map(c->c.toLowerCase())
+                .filter(c-> c.length() > minLength)
+                .collect(Collectors.toList());
+
+        List<String> toReturn = new ArrayList<>();
+
+        for(String testA : test){
+            if(compareBase(word1, testA)){
+                toReturn.add(testA);
+            }
+        }
+
+        System.out.println(toReturn);
+
+       return toReturn;
+
+
+    }
+
+    public boolean compareBase(Set<Character> input,String running){
+
+        //System.out.println(running);
+
+        Set<Character> runningHash = new HashSet<>();
+        for(Character a : running.toCharArray()){
+            runningHash.add(a);
+        }
+
+        int count = 0;
+        for(Character a : runningHash){
+            if(input.contains(a)){
+                count++;
+            }
+        }
+
+        // System.out.println(count);
+
+        if(count == runningHash.size()){
+            System.out.println(running);
+            return true;
+        }else{
+            return false;
+        }
+
+        
     }
 
     /**
